@@ -66,7 +66,7 @@ class EpicSettings(AgentConfig):
         default="https://api.deepseek.com", description="DeepSeek OpenAI-compatible base URL"
     )
 
-    DEEPSEEK_MODEL: str = Field(default="deepseek-chat", description="DeepSeek vision-capable default model")
+    DEEPSEEK_MODEL: str = Field(default="deepseek-v4-pro", description="DeepSeek vision-capable default model")
 
     BROWSER_BACKEND: str = Field(
         default="auto", description="Supported values: auto, camoufox, playwright"
