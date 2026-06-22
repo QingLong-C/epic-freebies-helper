@@ -1180,12 +1180,9 @@ def apply_deepseek_patch(settings: Any):
     try:
         from google import genai
 
-        # Temporarily map DeepSeek config to GLM fields so the
-        # existing GLMCompatibleGenAIClient works with DeepSeek's API.
-        original_key = settings.GLM_API_KEY
-        original_url = settings.GLM_BASE_URL
-        original_model = settings.GLM_MODEL
-
+        # Map DeepSeek config to GLM fields so the existing
+        # GLMCompatibleGenAIClient works with DeepSeek's API.
+        # No need to restore — these are only used once per process.
         settings.GLM_API_KEY = settings.DEEPSEEK_API_KEY
         settings.GLM_BASE_URL = settings.DEEPSEEK_BASE_URL
         settings.GLM_MODEL = settings.DEEPSEEK_MODEL
@@ -1194,10 +1191,6 @@ def apply_deepseek_patch(settings: Any):
         logger.info(
             f"🚀 DeepSeek 兼容补丁已应用 | 模型: {settings.DEEPSEEK_MODEL} | 地址: {settings.DEEPSEEK_BASE_URL}"
         )
-
-        settings.GLM_API_KEY = original_key
-        settings.GLM_BASE_URL = original_url
-        settings.GLM_MODEL = original_model
     except Exception as exc:
         logger.error(f"❌ DeepSeek 兼容补丁加载失败: {exc}")
 
