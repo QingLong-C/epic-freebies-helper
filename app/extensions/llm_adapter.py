@@ -1172,6 +1172,36 @@ def apply_glm_patch(settings: Any):
         logger.error(f"❌ GLM 兼容补丁加载失败: {exc}")
 
 
+def apply_deepseek_patch(settings: Any):
+    """Apply DeepSeek OpenAI-compatible patch."""
+    if not settings.DEEPSEEK_API_KEY:
+        return
+
+    try:
+        from google import genai
+
+        # Temporarily map DeepSeek config to GLM fields so the
+        # existing GLMCompatibleGenAIClient works with DeepSeek's API.
+        original_key = settings.GLM_API_KEY
+        original_url = settings.GLM_BASE_URL
+        original_model = settings.GLM_MODEL
+
+        settings.GLM_API_KEY = settings.DEEPSEEK_API_KEY
+        settings.GLM_BASE_URL = settings.DEEPSEEK_BASE_URL
+        settings.GLM_MODEL = settings.DEEPSEEK_MODEL
+
+        genai.Client = GLMCompatibleGenAIClient
+        logger.info(
+            f"🚀 DeepSeek 兼容补丁已应用 | 模型: {settings.DEEPSEEK_MODEL} | 地址: {settings.DEEPSEEK_BASE_URL}"
+        )
+
+        settings.GLM_API_KEY = original_key
+        settings.GLM_BASE_URL = original_url
+        settings.GLM_MODEL = original_model
+    except Exception as exc:
+        logger.error(f"❌ DeepSeek 兼容补丁加载失败: {exc}")
+
+
 def apply_llm_patch(settings: Any):
     provider = settings.LLM_PROVIDER.lower()
     if provider == "glm":
@@ -1183,6 +1213,15 @@ def apply_llm_patch(settings: Any):
 
     if provider == "gemini" and not settings.GEMINI_API_KEY:
         logger.error("LLM provider misconfigured | LLM_PROVIDER=gemini but GEMINI_API_KEY is empty")
+        return
+
+    if provider == "deepseek":
+        if not settings.DEEPSEEK_API_KEY:
+            logger.error(
+                "LLM provider misconfigured | LLM_PROVIDER=deepseek but DEEPSEEK_API_KEY is empty"
+            )
+            return
+        apply_deepseek_patch(settings)
         return
 
     apply_gemini_patch(settings)
